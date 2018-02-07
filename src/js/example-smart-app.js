@@ -24,8 +24,16 @@
         
 
         $.when(pt, obv).fail(onError);
+        var condition = smart.patient.api.fetchAll({
+                    type: 'Condition'
+                  });
+        var p = defaultPatient();
+        $.when(pt, condition).done(function(patient, condition) {
+          p.allergy = condition;
+           ret.resolve(p);
+         });
         
-        $.when(pt, obv).done(function(patient, obv) {
+        /*$.when(pt, obv).done(function(patient, obv) {
           var byCodes = smart.byCodes(obv, 'code');
           var gender = patient.gender;
           var dob = new Date(patient.birthDate);
@@ -67,17 +75,8 @@
           p.hdl = getQuantityValueAndUnit(hdl[0]);
           p.ldl = getQuantityValueAndUnit(ldl[0]);
 
-          var condition = smart.patient.api.fetchAll({
-                    type: 'Condition'
-                  });
-        $.when(pt, condition).done(function(patient, condition) {
-          p.allergy = condition;
-         });
-
           ret.resolve(p);
-        });
-
-
+        });*/
       } else {
         onError();
       }
