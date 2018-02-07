@@ -26,6 +26,7 @@
                   });
 
         $.when(pt, obv).fail(onError);
+        $.when(pt, allergyIntolerence).fail(onError);
         var p = defaultPatient();
         $.when(pt, allergyIntolerence).done(function(patient, allergyIntolerence) {
             p.allergy = allergyIntolerence;
