@@ -21,8 +21,11 @@
                       }
                     }
                   });
-        var allergyIntolerence = smart.patient.api.search({
-                    type: 'AllergyIntolerance'
+        var allergyIntolerence = smart.patient.api.fetchAll({
+                    type: 'AllergyIntolerance',
+                    query: {
+                      status: 'active'
+                    }
                   });
 
         $.when(pt, obv).fail(onError);
