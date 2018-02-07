@@ -24,7 +24,7 @@
         
 
         $.when(pt, obv).fail(onError);
-        var condition = smart.patient.api.search({
+        var condition = smart.patient.api.fetchAll({
                     type: 'Condition'
                   });
         var p = defaultPatient();
