@@ -21,9 +21,15 @@
                       }
                     }
                   });
+        var allergyIntolerence = smart.patient.api.read({
+                    type: 'AllergyIntolerance'
+                  });
 
         $.when(pt, obv).fail(onError);
-
+        var p = defaultPatient();
+        $.when(pt, allergyIntolerence).done(function(patient, allergyIntolerence) {
+            p.allergy = allergyIntolerence;
+         });
         $.when(pt, obv).done(function(patient, obv) {
           var byCodes = smart.byCodes(obv, 'code');
           var gender = patient.gender;
@@ -47,7 +53,7 @@
           var hdl = byCodes('2085-9');
           var ldl = byCodes('2089-1');
 
-          var p = defaultPatient();
+          //var p = defaultPatient();
           p.birthdate = dobStr;
           p.gender = gender;
           p.fname = fname;
@@ -90,6 +96,7 @@
       diastolicbp: {value: ''},
       ldl: {value: ''},
       hdl: {value: ''},
+      allergy: {value:''},
     };
   }
 
@@ -155,6 +162,8 @@
     $('#diastolicbp').html(p.diastolicbp);
     $('#ldl').html(p.ldl);
     $('#hdl').html(p.hdl);
+    $('#allergy').html(p.allergy);
+    
   };
 
 })(window);
