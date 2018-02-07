@@ -28,12 +28,8 @@
                     type: 'Condition'
                   });
         var p = defaultPatient();
-        $.when(pt, condition).done(function(patient, condition) {
-          p.allergy = condition;
-           ret.resolve(p);
-         });
         
-        /*$.when(pt, obv).done(function(patient, obv) {
+        $.when(pt, obv,condition).done(function(patient, obv,condition) {
           var byCodes = smart.byCodes(obv, 'code');
           var gender = patient.gender;
           var dob = new Date(patient.birthDate);
@@ -74,9 +70,10 @@
 
           p.hdl = getQuantityValueAndUnit(hdl[0]);
           p.ldl = getQuantityValueAndUnit(ldl[0]);
+          p.allergy = condition;
 
           ret.resolve(p);
-        });*/
+        });
       } else {
         onError();
       }
