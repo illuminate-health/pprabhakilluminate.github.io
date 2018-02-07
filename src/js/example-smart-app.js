@@ -24,13 +24,6 @@
         
 
         $.when(pt, obv).fail(onError);
-        var condition = smart.patient.api.fetchAll({
-                    type: 'Condition'
-                  });
-        var p = defaultPatient();
-        $.when(pt, condition).done(function(patient, condition) {
-          p.allergy = condition;
-         });
         
         $.when(pt, obv).done(function(patient, obv) {
           var byCodes = smart.byCodes(obv, 'code');
@@ -55,7 +48,7 @@
           var hdl = byCodes('2085-9');
           var ldl = byCodes('2089-1');
 
-          //var p = defaultPatient();
+          var p = defaultPatient();
           p.birthdate = dobStr;
           p.gender = gender;
           p.fname = fname;
@@ -74,8 +67,17 @@
           p.hdl = getQuantityValueAndUnit(hdl[0]);
           p.ldl = getQuantityValueAndUnit(ldl[0]);
 
+          var condition = smart.patient.api.fetchAll({
+                    type: 'Condition'
+                  });
+        $.when(pt, condition).done(function(patient, condition) {
+          p.allergy = condition;
+         });
+
           ret.resolve(p);
         });
+
+
       } else {
         onError();
       }
