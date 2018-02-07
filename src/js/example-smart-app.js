@@ -21,19 +21,17 @@
                       }
                     }
                   });
-        var allergyIntolerence = smart.patient.api.fetchAll({
-                    type: 'AllergyIntolerance',
-                    query: {
-                      status: 'active'
-                    }
-                  });
+        
 
         $.when(pt, obv).fail(onError);
-        $.when(pt, allergyIntolerence).fail(onError);
+        var condition = smart.patient.api.search({
+                    type: 'Condition'
+                  });
         var p = defaultPatient();
-        $.when(pt, allergyIntolerence).done(function(patient, allergyIntolerence) {
-            p.allergy = allergyIntolerence;
+        $.when(pt, condition).done(function(patient, condition) {
+          p.allergy = condition;
          });
+        
         $.when(pt, obv).done(function(patient, obv) {
           var byCodes = smart.byCodes(obv, 'code');
           var gender = patient.gender;
