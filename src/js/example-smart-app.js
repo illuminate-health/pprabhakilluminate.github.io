@@ -21,7 +21,7 @@
                       }
                     }
                   });
-        var allergyIntolerence = smart.patient.api.read({
+        var allergyIntolerence = smart.patient.api.search({
                     type: 'AllergyIntolerance'
                   });
 
