@@ -30,9 +30,12 @@
         var allergyIntolerence = smart.patient.api.fetchAll({
                     type: 'AllergyIntolerance'
                   });
+        var medicationOrder = smart.patient.api.fetchAll({
+                    type: 'MedicationOrder'
+                  });
        
         
-        $.when(pt, obv,condition,allergyIntolerence).done(function(patient, obv,condition,allergyIntolerence) {
+        $.when(pt, obv,condition,allergyIntolerence,medicationOrder).done(function(patient, obv,condition,allergyIntolerence,medicationOrder) {
           var byCodes = smart.byCodes(obv, 'code');
           var gender = patient.gender;
           var dob = new Date(patient.birthDate);
@@ -75,6 +78,7 @@
           p.ldl = getQuantityValueAndUnit(ldl[0]);
           p.allergy = getAllergy(allergyIntolerence); 
           p.condition = getConditions(condition);
+          p.medicationOrder = getMedicationOrder(medicationOrder);
 
           ret.resolve(p);
         });
@@ -102,6 +106,7 @@
       hdl: {value: ''},
       allergy: {value:''},
       condition: {value:''},
+      medicationOrder:{value:''},
     };
   }
 
@@ -167,6 +172,21 @@
     }
   }
 
+  function getMedicationOrder(medicationList) {
+    if (typeof medicationList != 'undefined') {
+      var medicationStr = '';
+      for (i = 0; i < medicationList.length; i++) { 
+
+        var medicineName = medicationList[i].medicationCodeableConcept.text;
+        var dosage = medicationList[i].dosageInstruction[0].text;
+        medicationStr = medicationStr + 'Name:' + medicineName +',' +'Dosage:'+ dosage +'\n' ;
+      }
+      return medicationStr;
+    } else {
+      return '';
+    }
+  }
+
   function getQuantityValueAndUnit(ob) {
     if (typeof ob != 'undefined' &&
         typeof ob.valueQuantity != 'undefined' &&
@@ -193,6 +213,8 @@
     $('#hdl').html(p.hdl);
     $('#allergy').html(p.allergy);
     $('#condition').html(p.condition);
+    $('#medication').html(p.medicationOrder);
+    
     
   };
 
