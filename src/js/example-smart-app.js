@@ -27,9 +27,12 @@
         var condition = smart.patient.api.fetchAll({
                     type: 'Condition'
                   });
-        var p = defaultPatient();
+        var allergyIntolerence = smart.patient.api.fetchAll({
+                    type: 'AllergyIntolerance'
+                  });
+       
         
-        $.when(pt, obv,condition).done(function(patient, obv,condition) {
+        $.when(pt, obv,condition,allergyIntolerence).done(function(patient, obv,condition,allergyIntolerence) {
           var byCodes = smart.byCodes(obv, 'code');
           var gender = patient.gender;
           var dob = new Date(patient.birthDate);
@@ -70,7 +73,8 @@
 
           p.hdl = getQuantityValueAndUnit(hdl[0]);
           p.ldl = getQuantityValueAndUnit(ldl[0]);
-          p.allergy = condition;
+          p.allergy = getAllergy(allergyIntolerence); 
+          p.condition = getConditions(condition);
 
           ret.resolve(p);
         });
@@ -97,6 +101,7 @@
       ldl: {value: ''},
       hdl: {value: ''},
       allergy: {value:''},
+      condition: {value:''},
     };
   }
 
@@ -138,6 +143,30 @@
     }
   }
 
+  function getConditions(conditionList) {
+    if (typeof conditionList != 'undefined') {
+      var conditionStr = '';
+      for (i = 0; i < conditionList.length; i++) { 
+        conditionStr = conditionStr + conditionList[i].code.text +',';
+      }
+      return conditionStr;
+    } else {
+      return '';
+    }
+  }
+
+  function getAllergy(allergyList) {
+    if (typeof allergyList != 'undefined') {
+      var allergyStr = '';
+      for (i = 0; i < allergyList.length; i++) { 
+        allergyStr = allergyStr + allergyList[i].code.text +',';
+      }
+      return allergyStr;
+    } else {
+      return '';
+    }
+  }
+
   function getQuantityValueAndUnit(ob) {
     if (typeof ob != 'undefined' &&
         typeof ob.valueQuantity != 'undefined' &&
@@ -163,6 +192,7 @@
     $('#ldl').html(p.ldl);
     $('#hdl').html(p.hdl);
     $('#allergy').html(p.allergy);
+    $('#condition').html(p.condition);
     
   };
 
