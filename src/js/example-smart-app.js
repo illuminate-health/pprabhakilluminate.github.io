@@ -178,7 +178,7 @@
       for (i = 0; i < medicationList.length; i++) { 
 
         var medicineName = medicationList[i].medicationCodeableConcept.text;
-        var dosage = medicationList[i].dosageInstruction[0].text;
+        var dosage = '';//medicationList[i].dosageInstruction[0].text;
         medicationStr = medicationStr + 'Name:' + medicineName +',' +'Dosage:'+ dosage +'\n' ;
       }
       return medicationStr;
