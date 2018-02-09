@@ -180,7 +180,7 @@
         var medicineName = medicationList[i].medicationCodeableConcept.text;
         //var dosage = medicationList[i].dosageInstruction[0];
         //var dosageStr = dosage.doseQuantity.value + dosage.doseQuantity.unit +','+;
-        medicationStr = medicationStr + medicineName ;
+        medicationStr = medicationStr + medicineName+',' ;
       }
       return medicationStr;
     } else {
