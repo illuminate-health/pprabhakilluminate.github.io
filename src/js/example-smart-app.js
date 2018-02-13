@@ -33,9 +33,13 @@
         var medicationOrder = smart.patient.api.fetchAll({
                     type: 'MedicationOrder'
                   });
+        var medicationStatement = smart.patient.api.fetchAll({
+                    type: 'MedicationStatement'
+                  });
+        
        
         
-        $.when(pt, obv,condition,allergyIntolerence,medicationOrder).done(function(patient, obv,condition,allergyIntolerence,medicationOrder) {
+        $.when(pt, obv,condition,allergyIntolerence,medicationOrder,medicationStatement).done(function(patient, obv,condition,allergyIntolerence,medicationOrder,medicationStatement) {
           var byCodes = smart.byCodes(obv, 'code');
           var gender = patient.gender;
           var dob = new Date(patient.birthDate);
