@@ -165,7 +165,7 @@
     if (typeof allergyList != 'undefined') {
       var allergyStr = '';
       for (i = 0; i < allergyList.length; i++) { 
-        allergyStr = allergyStr + allergyList[i].substance.coding[0].display +',';
+        allergyStr = allergyStr + allergyList[i].substance.text +',';
       }
       return allergyStr;
     } else {
