@@ -21,25 +21,10 @@
                       }
                     }
                   });
-        
 
         $.when(pt, obv).fail(onError);
-        var condition = smart.patient.api.fetchAll({
-                    type: 'Condition'
-                  });
-        var allergyIntolerence = smart.patient.api.fetchAll({
-                    type: 'AllergyIntolerance'
-                  });
-        var medicationOrder = smart.patient.api.fetchAll({
-                    type: 'MedicationOrder'
-                  });
-        var medicationStatement = smart.patient.api.fetchAll({
-                    type: 'MedicationStatement'
-                  });
-        
-       
-        
-        $.when(pt, obv,condition,allergyIntolerence,medicationOrder,medicationStatement).done(function(patient, obv,condition,allergyIntolerence,medicationOrder,medicationStatement) {
+
+        $.when(pt, obv).done(function(patient, obv) {
           var byCodes = smart.byCodes(obv, 'code');
           var gender = patient.gender;
           var dob = new Date(patient.birthDate);
@@ -80,9 +65,6 @@
 
           p.hdl = getQuantityValueAndUnit(hdl[0]);
           p.ldl = getQuantityValueAndUnit(ldl[0]);
-          p.allergy = getAllergy(allergyIntolerence); 
-          p.condition = getConditions(condition);
-          p.medicationOrder = getMedicationOrder(medicationOrder);
 
           ret.resolve(p);
         });
@@ -108,9 +90,6 @@
       diastolicbp: {value: ''},
       ldl: {value: ''},
       hdl: {value: ''},
-      allergy: {value:''},
-      condition: {value:''},
-      medicationOrder:{value:''},
     };
   }
 
@@ -152,46 +131,6 @@
     }
   }
 
-  function getConditions(conditionList) {
-    if (typeof conditionList != 'undefined') {
-      var conditionStr = '';
-      for (i = 0; i < conditionList.length; i++) { 
-        conditionStr = conditionStr + conditionList[i].code.text +',';
-      }
-      return conditionStr;
-    } else {
-      return '';
-    }
-  }
-
-  function getAllergy(allergyList) {
-    if (typeof allergyList != 'undefined') {
-      var allergyStr = '';
-      for (i = 0; i < allergyList.length; i++) { 
-        allergyStr = allergyStr + allergyList[i].substance.coding[0].display +',';
-      }
-      return allergyStr;
-    } else {
-      return '';
-    }
-  }
-
-  function getMedicationOrder(medicationList) {
-    if (typeof medicationList != 'undefined') {
-      var medicationStr = '';
-      for (i = 0; i < medicationList.length; i++) { 
-
-        var medicineName = medicationList[i].medicationCodeableConcept.text;
-        //var dosage = medicationList[i].dosageInstruction[0];
-        //var dosageStr = dosage.doseQuantity.value + dosage.doseQuantity.unit +','+;
-        medicationStr = medicationStr + medicineName+',' ;
-      }
-      return medicationStr;
-    } else {
-      return '';
-    }
-  }
-
   function getQuantityValueAndUnit(ob) {
     if (typeof ob != 'undefined' &&
         typeof ob.valueQuantity != 'undefined' &&
@@ -216,11 +155,6 @@
     $('#diastolicbp').html(p.diastolicbp);
     $('#ldl').html(p.ldl);
     $('#hdl').html(p.hdl);
-    $('#allergy').html(p.allergy);
-    $('#condition').html(p.condition);
-    $('#medication').html(p.medicationOrder);
-    
-    
   };
 
 })(window);
