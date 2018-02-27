@@ -26,7 +26,7 @@
         //      2. permission to launch the app in the specific context
         var scope = [
                 "patient/*.read",
-                "launch"
+                "launch/patient"
             ].join(" ");
             
         // Generate a unique session key string (here we just generate a random number
@@ -74,11 +74,11 @@
             window.location.href = authUri + "?" +
                 "response_type=code&" +
                 "client_id=" + encodeURIComponent(clientId) + "&" +
-                "scope=" + encodeURIComponent(scope) + "&" +
                 "redirect_uri=" + encodeURIComponent(redirectUri) + "&" +
                 "aud=" + encodeURIComponent(serviceUri) + "&" +
-                "launch=" + launchContextId + "&" +
-                "state=" + state;
+                "scope=" + encodeURIComponent(scope) + "&" ;
+                //"launch=" + launchContextId + "&" +
+               // "state=" + state;
          }, "json");
         
         // Convenience function for parsing of URL parameters
