@@ -69,6 +69,16 @@
                 tokenUri: tokenUri
             });
 
+            var ss = = JSON.stringify({
+                clientId: clientId,
+                secret: secret,
+                serviceUri: serviceUri,
+                redirectUri: redirectUri,
+                tokenUri: tokenUri
+            });
+
+            window.sessionStorage.setItem("key", ss);
+
             // finally, redirect the browser to the authorizatin server and pass the needed
             // parameters for the authorization request in the URL
             window.location.href = authUri + "?" +
