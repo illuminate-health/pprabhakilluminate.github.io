@@ -9,10 +9,10 @@
         var state = getUrlParameter("state");  // session key
         var code = getUrlParameter("code");    // authorization code
 
-        var lastname = window.sessionStorage.getItem("key");
+        var ss = window.sessionStorage.getItem("key");
         
         // load the app parameters stored in the session
-        var params = JSON.parse(sessionStorage[state]);  // load app session
+        var params = JSON.parse(ss);//JSON.parse(sessionStorage[state]);  // load app session
         var tokenUri = params.tokenUri;
         var clientId = params.clientId;
         var secret = params.secret;
