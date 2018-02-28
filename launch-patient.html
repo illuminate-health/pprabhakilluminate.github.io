@@ -36,7 +36,7 @@
         // To keep things flexible, let's construct the launch URL by taking the base of the 
         // current URL and replace "launch.html" with "index.html".
         var launchUri = window.location.protocol + "//" + window.location.host + window.location.pathname;
-        var redirectUri = launchUri.replace("launch-patient.html","");
+        var redirectUri = launchUri.replace("launch-patient.html","index.html");
         
         // FHIR Service Conformance Statement URL
         var conformanceUri = serviceUri + "/metadata"
@@ -61,13 +61,15 @@
             });
             
             // retain a couple parameters in the session for later use
-            sessionStorage[state] = JSON.stringify({
+            
+            var s = JSON.stringify({
                 clientId: clientId,
                 secret: secret,
                 serviceUri: serviceUri,
                 redirectUri: redirectUri,
                 tokenUri: tokenUri
             });
+            sessionStorage.setItem(state,s);
 
             // finally, redirect the browser to the authorizatin server and pass the needed
             // parameters for the authorization request in the URL
