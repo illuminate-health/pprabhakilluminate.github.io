@@ -82,7 +82,8 @@
                 },
             }).done(function(pt){
                 var allergyStr;
-                pt.entry.forEach( function (en)
+                var entry = pt.entry;
+                entry.forEach( function (en)
                 {
                     allergyStr += "," + en.resource.substance.text;
                     
