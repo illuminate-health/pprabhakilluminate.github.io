@@ -60,6 +60,16 @@
             }).done(function(pt){
                 var name = pt.name[0].given.join(" ") +" "+ pt.name[0].family.join(" ");
                 document.body.innerHTML += "<h3>Patient: " + name + "</h3>";
+
+                var address = pt.address[0].line.join(" ") +" "+pt.address[0].city +" "+pt.address[0].state +" "+pt.address[0].postalCode +" "+pt.address[0].country;
+                document.body.innerHTML += "<h5>Address: " + address + "</h5>";
+
+                var phone = pt.telecom[0].value;
+                document.body.innerHTML += "<h5>Contact: " + phone + "</h5>";
+
+                var maritalStatus = pt.maritalStatus.text;
+                document.body.innerHTML += "<h5>Marital Status: " + maritalStatus + "</h5>";
+
             });
         });
         
