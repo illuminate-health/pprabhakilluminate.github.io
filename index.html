@@ -72,7 +72,7 @@
 
             });
 
-            var allergyUrl = serviceUri + "AllergyIntolerance?patient=" + patientId;
+            var allergyUrl = serviceUri + "/AllergyIntolerance?patient=" + patientId;
             $.ajax({
                 url: allergyUrl,
                 type: "GET",
