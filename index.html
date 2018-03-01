@@ -72,19 +72,28 @@
 
             });
 
-           
-        });
-
-        $.ajax(options).done(function(res){
-            // should get back the access token and the patient ID
-            var accessToken = res.access_token;
-            var patientId = res.patient;
+             var obvUrl = serviceUri + "/Observation?patient=" + patientId;
+            $.ajax({
+                url: obvUrl,
+                type: "GET",
+                dataType: "json",
+                headers: {
+                    "Authorization": "Bearer " + accessToken
+                },
+            }).done(function(pt){
+                var obsStr;
+                var entry = pt.entry;
+                entry.forEach( function (en)
+                {
+                    obsStr += "," + en.resource.code.text + ":" + en.resource.valueQuantity.value + en.resource.valueQuantity.unit;
                     
-            // and now we can use these to construct standard FHIR
-            // REST calls to obtain patient resources with the
-            // SMART on FHIR-specific authorization header...
-            // Let's, for example, grab the patient resource and
-            // print the patient name on the screen
+                });
+
+                document.body.innerHTML += "<h5>Observation: " + obsStr + "</h5>";
+
+
+            });
+
             var allergyUrl = serviceUri + "/AllergyIntolerance?patient=" + patientId;
             $.ajax({
                 url: allergyUrl,
@@ -109,6 +118,7 @@
 
            
         });
+
         
         // Convenience function for parsing of URL parameters
         // based on http://www.jquerybyexample.net/2012/06/get-url-parameters-using-jquery.html
