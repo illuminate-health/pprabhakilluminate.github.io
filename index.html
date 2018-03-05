@@ -72,7 +72,7 @@
 
             });
 
-             var obvUrl = serviceUri + "/Observation?patient=" + patientId;
+             var obvUrl = serviceUri + "/Observation?patient=" + patientId +"&code=8310-5";
             $.ajax({
                 url: obvUrl,
                 type: "GET",
@@ -114,6 +114,69 @@
                 document.body.innerHTML += "<h5>Allergy: " + allergyStr + "</h5>";
 
 
+            });
+
+            var conditionsUrl = serviceUri + "/Condition?patient=" + patientId;
+            $.ajax({
+                url: conditionsUrl,
+                type: "GET",
+                dataType: "json",
+                headers: {
+                    "Authorization": "Bearer " + accessToken
+                },
+            }).done(function(pt){
+                var conditionStr;
+                var entry = pt.entry;
+                entry.forEach( function (en)
+                {
+                    conditionStr += "," + en.resource.code.text;
+                    
+                });
+
+                document.body.innerHTML += "<h5>Conditions: " + conditionStr + "</h5>";
+            });
+
+            var medicationUrl = serviceUri + "/MedicationOrder?patient=" + patientId;
+            $.ajax({
+                url: medicationUrl,
+                type: "GET",
+                dataType: "json",
+                headers: {
+                    "Authorization": "Bearer " + accessToken
+                },
+            }).done(function(pt){
+                var medicationStr;
+                var entry = pt.entry;
+                entry.forEach( function (en)
+                {
+                    medicationStr += "," + en.resource.medicationReference.display +"-" + en.resource.dosageInstruction[0].route.text +"- start:" + en.resource.dosageInstruction[0].timing.repeat.boundsPeriod.start+"- end:" + en.resource.dosageInstruction[0].timing.repeat.boundsPeriod.end +"-" + en.resource.dosageInstruction[0].doseQuantity.value + en.resource.dosageInstruction[0].doseQuantity.unit ;
+                   
+                    
+                });
+
+                document.body.innerHTML += "<h5>Medication: " + medicationStr + "</h5>";
+            });
+
+            
+            var immunizationUrl = serviceUri + "/Immunization?patient=" + patientId;
+            $.ajax({
+                url: immunizationUrl,
+                type: "GET",
+                dataType: "json",
+                headers: {
+                    "Authorization": "Bearer " + accessToken
+                },
+            }).done(function(pt){
+                var immunizationStr;
+                var entry = pt.entry;
+                entry.forEach( function (en)
+                {
+                    immunizationStr += "," + en.resource.vaccineCode.text;
+                   
+                    
+                });
+
+                document.body.innerHTML += "<h5>Immunization: " + immunizationStr + "</h5>";
             });
 
            
