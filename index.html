@@ -60,20 +60,24 @@
             // SMART on FHIR-specific authorization header...
             // Let's, for example, grab the patient resource and
             // print the patient name on the screen
-            var url = serviceUri + "/Patient/" + patientId;
-            await getPatient(url, accessToken, response);
-            var medicationUrl = serviceUri + "/MedicationOrder?patient=" + patientId;
-            await getMedications(medicationUrl, accessToken, response);
-            var conditionsUrl = serviceUri + "/Condition?patient=" + patientId;
-            await getConditions(conditionsUrl, accessToken, response);
-            var allergyUrl = serviceUri + "/AllergyIntolerance?patient=" + patientId;
-            await getAllergies(allergyUrl, accessToken, response);
-            var immunizationUrl = serviceUri + "/Immunization?patient=" + patientId;
-            //await getImmunizations(immunizationUrl, accessToken, response);
-            var obvUrl = serviceUri + "/Observation?patient=" + patientId + "&code=8310-5";
-            await getObservations(obvUrl, accessToken, response);
-            document.body.innerHTML =
-            "<h1>Thank you, we successfully pulled your health records, please press <b>Done</b> button on right hand corner.</h1>";
+            try {
+                var url = serviceUri + "/Patient/" + patientId;
+                //await getPatient(url, accessToken, response);
+                var medicationUrl = serviceUri + "/MedicationOrder?patient=" + patientId;
+                await getMedications(medicationUrl, accessToken, response);
+                var conditionsUrl = serviceUri + "/Condition?patient=" + patientId;
+                await getConditions(conditionsUrl, accessToken, response);
+                var allergyUrl = serviceUri + "/AllergyIntolerance?patient=" + patientId;
+                await getAllergies(allergyUrl, accessToken, response);
+                var immunizationUrl = serviceUri + "/Immunization?patient=" + patientId;
+                //await getImmunizations(immunizationUrl, accessToken, response);
+                var obvUrl = serviceUri + "/Observation?patient=" + patientId + "&code=8310-5";
+                //await getObservations(obvUrl, accessToken, response);
+                document.body.innerHTML =
+                "<h1>Thank you, we successfully pulled your health records, please press <b>Done</b> button on right hand corner.</h1>";
+            } catch(e) {
+                console.log(e);
+            }
         }
 
         async function getPatient(url, accessToken, response) {
