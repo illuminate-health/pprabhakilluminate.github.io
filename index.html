@@ -1,254 +1,196 @@
 <html>
-
-<head>
-    <title>Cerner Interface App</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-</head>
-
-<body>
+  <head>
+     <title>Simple Auth App</title>
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  </head>
+  <body>
     <script>
         // get the URL parameters received from the authorization server
-        var state = getUrlParameter("state"); // session key
-        var code = getUrlParameter("code"); // authorization code
+        var state = getUrlParameter("state");  // session key
+        var code = getUrlParameter("code");    // authorization code
 
         var ss = window.sessionStorage.getItem("key");
-
-        var response = {
-            profile: null,
-            medications: null,
-            conditions: null,
-            allergies: null,
-            immunizations: null,
-            observations: null
-        }
-
+        
         // load the app parameters stored in the session
-        var params = JSON.parse(ss); //JSON.parse(sessionStorage[state]);  // load app session
-
+        var params = JSON.parse(ss);//JSON.parse(sessionStorage[state]);  // load app session
         var tokenUri = params.tokenUri;
         var clientId = params.clientId;
         var secret = params.secret;
         var serviceUri = params.serviceUri;
         var redirectUri = params.redirectUri;
-
-        authenticate();
-
-        function getResponse() {
-            return response;
+        
+        // Prep the token exchange call parameters
+        var data = {
+            code: code,
+            grant_type: 'authorization_code',
+            redirect_uri: redirectUri
+        };
+        var options;
+        if (!secret) {
+            data['client_id'] = clientId;
         }
-
-        async function authenticate() {
-            // Prep the token exchange call parameters
-            var data = {
-                code: code,
-                grant_type: 'authorization_code',
-                redirect_uri: redirectUri
-            };
-            var options;
-            if (!secret) {
-                data['client_id'] = clientId;
-            }
-            options = {
-                url: tokenUri,
-                type: 'POST',
-                data: data
-            };
-            if (secret) {
-                options['headers'] = {
-                    'Authorization': 'Basic ' + btoa(clientId + ':' + secret)
-                };
-            }
-
-            // obtain authorization token from the authorization service using the authorization code
-            let res = await $.ajax(options);
+        options = {
+            url: tokenUri,
+            type: 'POST',
+            data: data
+        };
+        if (secret) {
+            options['headers'] = {'Authorization': 'Basic ' + btoa(clientId + ':' + secret)};
+        }
+        
+        // obtain authorization token from the authorization service using the authorization code
+        $.ajax(options).done(function(res){
             // should get back the access token and the patient ID
             var accessToken = res.access_token;
             var patientId = res.patient;
-            // var serviceUri = 'https://open-ic.epic.com/argonaut/api/FHIR/Argonaut';  
+                    
             // and now we can use these to construct standard FHIR
             // REST calls to obtain patient resources with the
             // SMART on FHIR-specific authorization header...
             // Let's, for example, grab the patient resource and
             // print the patient name on the screen
             var url = serviceUri + "/Patient/" + patientId;
-            await getPatient(url, accessToken, response);
-            var medicationUrl = serviceUri + "/MedicationOrder?patient=" + patientId;
-            await getMedications(medicationUrl, accessToken, response);
-            var conditionsUrl = serviceUri + "/Condition?patient=" + patientId;
-            await getConditions(conditionsUrl, accessToken, response);
+            $.ajax({
+                url: url,
+                type: "GET",
+                dataType: "json",
+                headers: {
+                    "Authorization": "Bearer " + accessToken
+                },
+            }).done(function(pt){
+                var name = pt.name[0].given.join(" ") +" "+ pt.name[0].family.join(" ");
+                document.body.innerHTML += "<h3>Patient: " + name + "</h3>";
+
+                var address = pt.address[0].line.join(" ") +" "+pt.address[0].city +" "+pt.address[0].state +" "+pt.address[0].postalCode +" "+pt.address[0].country;
+                document.body.innerHTML += "<h5>Address: " + address + "</h5>";
+
+                var phone = pt.telecom[0].value;
+                document.body.innerHTML += "<h5>Contact: " + phone + "</h5>";
+
+                var maritalStatus = pt.maritalStatus.text;
+                document.body.innerHTML += "<h5>Marital Status: " + maritalStatus + "</h5>";
+
+            });
+
+             var obvUrl = serviceUri + "/Observation?patient=" + patientId +"&code=8310-5";
+            $.ajax({
+                url: obvUrl,
+                type: "GET",
+                dataType: "json",
+                headers: {
+                    "Authorization": "Bearer " + accessToken
+                },
+            }).done(function(pt){
+                var obsStr;
+                var entry = pt.entry;
+                entry.forEach( function (en)
+                {
+                    obsStr += "," + en.resource.code.text + ":" + en.resource.valueQuantity.value + en.resource.valueQuantity.unit;
+                    
+                });
+
+                document.body.innerHTML += "<h5>Observation: " + obsStr + "</h5>";
+
+
+            });
+
             var allergyUrl = serviceUri + "/AllergyIntolerance?patient=" + patientId;
-            await getAllergies(allergyUrl, accessToken, response);
-            //var immunizationUrl = serviceUri + "/Immunization?patient=" + patientId;
-            //await getImmunizations(immunizationUrl, accessToken, response);
-            var obvUrl = serviceUri + "/Observation?patient=" + patientId + "&code=8310-5";
-            await getObservations(obvUrl, accessToken, response);
-            console.log(response);
-            //$('#response').val(JSON.stringify(response));
-            //console.log($('#response').val());
-            //console.log(document.getElementById('response').value);
-            document.body.innerHTML =
-                "<h1>Thank you, we successfully pulled your health records, please press <b>Done</b> button on right hand corner.</h1>";
-        }
-
-        async function getPatient(url, accessToken, response) {
-            let pt = await $.ajax({
-                url: url,
+            $.ajax({
+                url: allergyUrl,
                 type: "GET",
                 dataType: "json",
                 headers: {
                     "Authorization": "Bearer " + accessToken
                 },
-            });
-            response.profile = pt;
-            $('#response').val(JSON.stringify(response));
-            var name = pt.name[0].given.join(" ") + " " + pt.name[0].family.join(" ");
-            document.body.innerHTML += "<h3>Patient: " + name + "</h3>";
-
-            var address = pt.address[0].line.join(" ") + " " + pt.address[0].city + " " + pt
-                .address[0].state + " " + pt.address[0].postalCode + " " + pt.address[0].country;
-            document.body.innerHTML += "<h5>Address: " + address + "</h5>";
-
-            var phone = pt.telecom[0].value;
-            document.body.innerHTML += "<h5>Contact: " + phone + "</h5>";
-
-            var maritalStatus = pt.maritalStatus.text;
-            document.body.innerHTML += "<h5>Marital Status: " + maritalStatus + "</h5>";
-            return true;
-        }
-
-        async function getMedications(url, accessToken, response) {
-            let pt = await $.ajax({
-                url: url,
-                type: "GET",
-                dataType: "json",
-                headers: {
-                    "Authorization": "Bearer " + accessToken
-                },
-            });
-            response.medications = pt.entry;
-            $('#response').val(JSON.stringify(response));
-            var medicationStr;
-            var entry = pt.entry;
-            entry.forEach(function (en) {
-                if (en.hasOwnProperty('resource') &&
-                    en.resource.hasOwnProperty('medicationReference') &&
-                    en.resource.medicationReference.hasOwnProperty('display')) {
-                    medicationStr += "," + en.resource.medicationReference.display + "-" +
-                        en.resource.dosageInstruction[0].route.text + "- start:" + en
-                        .resource.dosageInstruction[0].timing.repeat.boundsPeriod.start +
-                        "- end:" + en.resource.dosageInstruction[0].timing.repeat
-                        .boundsPeriod.end + "-" + en.resource.dosageInstruction[0]
-                        .doseQuantity.value + en.resource.dosageInstruction[0].doseQuantity
-                        .unit;
-                }
-            });
-            document.body.innerHTML += "<h5>Medication: " + medicationStr + "</h5>";
-            return true;
-        }
-
-        async function getConditions(url, accessToken, response) {
-            let pt = await $.ajax({
-                url: url,
-                type: "GET",
-                dataType: "json",
-                headers: {
-                    "Authorization": "Bearer " + accessToken
-                },
-            });
-            response.conditions = pt.entry;
-            $('#response').val(JSON.stringify(response));
-            var conditionStr;
-            var entry = pt.entry;
-            entry.forEach(function (en) {
-                if (en.hasOwnProperty('resource') &&
-                    en.resource.hasOwnProperty('code') &&
-                    en.resource.code.hasOwnProperty('text')) {
-                    conditionStr += "," + en.resource.code.text;
-                }
-            });
-            document.body.innerHTML += "<h5>Conditions: " + conditionStr + "</h5>";
-            return true;
-        }
-
-        async function getAllergies(url, accessToken, response) {
-            let pt = await $.ajax({
-                url: url,
-                type: "GET",
-                dataType: "json",
-                headers: {
-                    "Authorization": "Bearer " + accessToken
-                },
-            });
-            response.allergies = pt.entry;
-            $('#response').val(JSON.stringify(response));
-            var allergyStr;
-            var entry = pt.entry;
-            entry.forEach(function (en) {
-                if (en.hasOwnProperty('resource') &&
-                    en.resource.hasOwnProperty('substance') &&
-                    en.resource.substance.hasOwnProperty('text')) {
+            }).done(function(pt){
+                var allergyStr;
+                var entry = pt.entry;
+                entry.forEach( function (en)
+                {
                     allergyStr += "," + en.resource.substance.text;
-                }
-            });
-            document.body.innerHTML += "<h5>Allergy: " + allergyStr + "</h5>";
-            return true;
-        }
+                    
+                });
 
-        async function getImmunizations(url, accessToken, response) {
-            let pt = await $.ajax({
-                url: url,
+                document.body.innerHTML += "<h5>Allergy: " + allergyStr + "</h5>";
+
+
+            });
+
+            var conditionsUrl = serviceUri + "/Condition?patient=" + patientId;
+            $.ajax({
+                url: conditionsUrl,
                 type: "GET",
                 dataType: "json",
                 headers: {
                     "Authorization": "Bearer " + accessToken
                 },
+            }).done(function(pt){
+                var conditionStr;
+                var entry = pt.entry;
+                entry.forEach( function (en)
+                {
+                    conditionStr += "," + en.resource.code.text;
+                    
+                });
+
+                document.body.innerHTML += "<h5>Conditions: " + conditionStr + "</h5>";
             });
-            response.immunizations = pt.entry;
-            $('#response').val(JSON.stringify(response));
-            var immunizationStr;
-            var entry = pt.entry;
-            entry.forEach(function (en) {
-                if (en.hasOwnProperty('resource') &&
-                    en.resource.hasOwnProperty('vaccineCode') &&
-                    en.resource.vaccineCode.hasOwnProperty('text')) {
+
+            var medicationUrl = serviceUri + "/MedicationOrder?patient=" + patientId;
+            $.ajax({
+                url: medicationUrl,
+                type: "GET",
+                dataType: "json",
+                headers: {
+                    "Authorization": "Bearer " + accessToken
+                },
+            }).done(function(pt){
+                var medicationStr;
+                var entry = pt.entry;
+                entry.forEach( function (en)
+                {
+                    medicationStr += "," + en.resource.medicationReference.display +"-" + en.resource.dosageInstruction[0].route.text +"- start:" + en.resource.dosageInstruction[0].timing.repeat.boundsPeriod.start+"- end:" + en.resource.dosageInstruction[0].timing.repeat.boundsPeriod.end +"-" + en.resource.dosageInstruction[0].doseQuantity.value + en.resource.dosageInstruction[0].doseQuantity.unit ;
+                   
+                    
+                });
+
+                document.body.innerHTML += "<h5>Medication: " + medicationStr + "</h5>";
+            });
+
+            
+            /*var immunizationUrl = serviceUri + "/Immunization?patient=" + patientId;
+            $.ajax({
+                url: immunizationUrl,
+                type: "GET",
+                dataType: "json",
+                headers: {
+                    "Authorization": "Bearer " + accessToken
+                },
+            }).done(function(pt){
+                var immunizationStr;
+                var entry = pt.entry;
+                entry.forEach( function (en)
+                {
                     immunizationStr += "," + en.resource.vaccineCode.text;
-                }
-            });
-            document.body.innerHTML += "<h5>Immunization: " + immunizationStr + "</h5>";
-            return true;
-        }
+                   
+                    
+                });
 
-        async function getObservations(url, accessToken, response) {
-            let pt = await $.ajax({
-                url: url,
-                type: "GET",
-                dataType: "json",
-                headers: {
-                    "Authorization": "Bearer " + accessToken
-                },
-            });
-            response.observations = pt.entry;
-            $('#response').val(JSON.stringify(response));
-            var obsStr;
-            var entry = pt.entry;
-            entry.forEach(function (en) {
-                if (en.hasOwnProperty('resource') &&
-                    en.resource.hasOwnProperty('code') &&
-                    en.resource.code.hasOwnProperty('text')) {
-                    obsStr += "," + en.resource.code.text + ":" + en.resource.valueQuantity
-                        .value + en.resource.valueQuantity.unit;
-                }
-            });
-            document.body.innerHTML += "<h5>Observation: " + obsStr + "</h5>";
-            return true;
-        }
+                document.body.innerHTML += "<h5>Immunization: " + immunizationStr + "</h5>";
+            });*/
 
+           
+        });
+
+        
         // Convenience function for parsing of URL parameters
         // based on http://www.jquerybyexample.net/2012/06/get-url-parameters-using-jquery.html
-        function getUrlParameter(sParam) {
+        function getUrlParameter(sParam)
+        {
             var sPageURL = window.location.search.substring(1);
             var sURLVariables = sPageURL.split('&');
-            for (var i = 0; i < sURLVariables.length; i++) {
+            for (var i = 0; i < sURLVariables.length; i++) 
+            {
                 var sParameterName = sURLVariables[i].split('=');
                 if (sParameterName[0] == sParam) {
                     var res = sParameterName[1].replace(/\+/g, '%20');
@@ -257,6 +199,5 @@
             }
         }
     </script>
-</body>
-
+  </body>
 </html>
