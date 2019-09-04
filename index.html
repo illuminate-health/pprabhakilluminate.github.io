@@ -27,28 +27,30 @@
             immunizations: null,
             observations: null
         }
+        authenticate();
 
-        // Prep the token exchange call parameters
-        var data = {
-            code: code,
-            grant_type: 'authorization_code',
-            redirect_uri: redirectUri
-        };
-        var options;
-        if (!secret) {
-            data['client_id'] = clientId;
-        }
-        options = {
-            url: tokenUri,
-            type: 'POST',
-            data: data
-        };
-        if (secret) {
-            options['headers'] = {'Authorization': 'Basic ' + btoa(clientId + ':' + secret)};
-        }
-        
-        // obtain authorization token from the authorization service using the authorization code
-        $.ajax(options).done(async function(res){
+        async function authenticate() {
+            // Prep the token exchange call parameters
+            var data = {
+                code: code,
+                grant_type: 'authorization_code',
+                redirect_uri: redirectUri
+            };
+            var options;
+            if (!secret) {
+                data['client_id'] = clientId;
+            }
+            options = {
+                url: tokenUri,
+                type: 'POST',
+                data: data
+            };
+            if (secret) {
+                options['headers'] = {'Authorization': 'Basic ' + btoa(clientId + ':' + secret)};
+            }
+            
+            // obtain authorization token from the authorization service using the authorization code
+            let res = await $.ajax(options);
             // should get back the access token and the patient ID
             var accessToken = res.access_token;
             var patientId = res.patient;
@@ -72,7 +74,7 @@
             await getObservations(obvUrl, accessToken, response);
             document.body.innerHTML =
             "<h1>Thank you, we successfully pulled your health records, please press <b>Done</b> button on right hand corner.</h1>";
-        });
+        }
 
         async function getPatient(url, accessToken, response) {
             let pt = await $.ajax({
