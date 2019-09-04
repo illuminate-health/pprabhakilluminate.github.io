@@ -164,13 +164,22 @@
                 $('#response').val(JSON.stringify(response));
                 var medicationStr;
                 var entry = pt.entry;
-                entry.forEach( function (en)
+                entry.forEach(async function (en)
                 {
-                    medicationStr += "," + en.resource.medicationReference.display +"-" + en.resource.dosageInstruction[0].route.text +"- start:" + en.resource.dosageInstruction[0].timing.repeat.boundsPeriod.start+"- end:" + en.resource.dosageInstruction[0].timing.repeat.boundsPeriod.end +"-" + en.resource.dosageInstruction[0].doseQuantity.value + en.resource.dosageInstruction[0].doseQuantity.unit ;
-                   
-                    
+                    let reference = await $.ajax({
+                        url: serviceUri + "/Medication?code=" + en.resource.medicationReference.reference.replace("#", ""),
+                        type: "GET",
+                        dataType: "json",
+                        headers: {
+                            "Authorization": "Bearer " + accessToken
+                        },
+                    });
+                    console.log(reference)
+                    en.resource.medicationReference.reference = reference
+                    medicationStr += "," + en.resource.medicationReference.display +"-" + en.resource.dosageInstruction[0].route.text +"- start:" + en.resource.dosageInstruction[0].timing.repeat.boundsPeriod.start+"- end:" + en.resource.dosageInstruction[0].timing.repeat.boundsPeriod.end +"-" + en.resource.dosageInstruction[0].doseQuantity.value + en.resource.dosageInstruction[0].doseQuantity.unit ;   
                 });
-
+                response.medications = pt.entry;
+                $('#response').val(JSON.stringify(response));
                 document.body.innerHTML += "<h5>Medication: " + medicationStr + "</h5>";
             });
 
